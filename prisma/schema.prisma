@@ -1,10 +1,8 @@
 // This is your Prisma schema file,
 // learn more about it in the docs: https://pris.ly/d/prisma-schema
 
-// Get a free hosted Postgres database in seconds: `npx create-db`
-
 generator client {
-  provider = "prisma-client"
+  provider = "prisma-client-js"
   output   = "../src/generated/prisma"
 }
 
@@ -12,38 +10,44 @@ datasource db {
   provider = "sqlite"
 }
 
+model User {
+  id        String   @id @default(cuid())
+  email     String   @unique
+  password  String
+  name      String?
+  createdAt DateTime @default(now())
+  orders    Order[]
+}
+
 model Product {
-  id         Int         @id @default(autoincrement())
+  id         String      @id @default(cuid())
   name       String
-  sku        String      @unique
-  price      Decimal
+  price      Float
+  stock      Int
+  imageUrl   String?
   createdAt  DateTime    @default(now())
-  updatedAt  DateTime    @updatedAt
   orderItems OrderItem[]
 }
 
 model Order {
-  id         Int         @id @default(autoincrement())
-  customer   String
-  total      Decimal
-  status     String      @default("PENDING")
-  createdAt  DateTime    @default(now())
-  updatedAt  DateTime    @updatedAt
-  orderItems OrderItem[]
+  id              String   @id @default(cuid())
+  userId          String
+  user            User     @relation(fields: [userId], references: [id])
+  customerName    String
+  customerAddress String
+  customerPhone   String?
+  total           Float
+  status          String   @default("pending")
+  createdAt       DateTime @default(now())
+  items           OrderItem[]
 }
 
 model OrderItem {
-  id         Int      @id @default(autoincrement())
-  orderId    Int
-  productId  Int
-  quantity   Int      @default(1)
-  unitPrice  Decimal
-  createdAt  DateTime @default(now())
-
-  order      Order    @relation(fields: [orderId], references: [id], onDelete: Cascade)
-  product    Product  @relation(fields: [productId], references: [id], onDelete: Restrict)
-
-  @@index([orderId])
-  @@index([productId])
-  @@unique([orderId, productId])
+  id        String  @id @default(cuid())
+  orderId   String
+  order     Order   @relation(fields: [orderId], references: [id])
+  productId String
+  product   Product @relation(fields: [productId], references: [id])
+  quantity  Int
+  price     Float
 }
