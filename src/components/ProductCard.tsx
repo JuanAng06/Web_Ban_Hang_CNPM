@@ -1,5 +1,7 @@
 "use client";
 
+import { useCartStore } from "@/store/cartStore";
+
 export interface Product {
   id: string;
   name: string;
@@ -13,11 +15,19 @@ interface ProductCardProps {
 
 /**
  * Card hiển thị thông tin cơ bản của một sản phẩm.
- * Nút "Thêm vào giỏ" tạm thời chỉ log product id để phục vụ bước tiếp theo.
+ * Nút "Thêm vào giỏ" đẩy dữ liệu vào Zustand cart store (persist localStorage).
  */
 export default function ProductCard({ product }: ProductCardProps) {
+  const addItem = useCartStore((s) => s.addItem);
+
   const handleAddToCart = () => {
-    console.log("Thêm sản phẩm:", product.id);
+    addItem({
+      id: product.id,
+      name: product.name,
+      price: product.price,
+      imageUrl: product.imageUrl,
+    });
+    alert(`Đã thêm "${product.name}" vào giỏ hàng.`);
   };
 
   return (
