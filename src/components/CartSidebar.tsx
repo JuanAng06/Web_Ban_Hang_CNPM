@@ -129,9 +129,16 @@ export default function CartSidebar({ isOpen, onClose }: CartSidebarProps) {
             </span>
           </div>
           <Link
+            href="/orders"
+            onClick={onClose}
+            className="mb-2 block w-full rounded-md border border-gray-300 bg-white py-2.5 text-center text-sm font-medium text-gray-800 transition hover:bg-gray-50"
+          >
+            Lịch sử đơn hàng
+          </Link>
+          <Link
             href="/checkout"
             onClick={onClose}
-            className={`mb-2 block w-full rounded-md bg-indigo-600 py-2.5 text-center text-sm font-medium text-white transition hover:bg-indigo-700 ${
+            className={`block w-full rounded-md bg-indigo-600 py-2.5 text-center text-sm font-medium text-white transition hover:bg-indigo-700 ${
               items.length === 0 ? "pointer-events-none opacity-50" : ""
             }`}
           >
