@@ -84,7 +84,7 @@ export default function RegisterPage() {
               autoComplete="name"
               value={name}
               onChange={(e) => setName(e.target.value)}
-              className="w-full rounded-md border border-gray-300 px-3 py-2 focus:border-indigo-500 focus:outline-none"
+              className="w-full rounded-md border border-gray-300 px-3 py-2 text-black placeholder:text-gray-400 focus:border-indigo-500 focus:outline-none"
               placeholder="Nguyễn Văn A"
             />
           </div>
@@ -98,7 +98,7 @@ export default function RegisterPage() {
               autoComplete="email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              className="w-full rounded-md border border-gray-300 px-3 py-2 focus:border-indigo-500 focus:outline-none"
+              className="w-full rounded-md border border-gray-300 px-3 py-2 text-black placeholder:text-gray-400 focus:border-indigo-500 focus:outline-none"
               required
             />
           </div>
@@ -112,7 +112,7 @@ export default function RegisterPage() {
               autoComplete="new-password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
-              className="w-full rounded-md border border-gray-300 px-3 py-2 focus:border-indigo-500 focus:outline-none"
+              className="w-full rounded-md border border-gray-300 px-3 py-2 text-black placeholder:text-gray-400 focus:border-indigo-500 focus:outline-none"
               required
               minLength={6}
             />

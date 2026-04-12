@@ -94,16 +94,18 @@ function OrderHistoryContent() {
 
   return (
     <main className="mx-auto max-w-6xl px-4 py-8 md:px-6">
-      <div className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+      <div className="mb-6 flex flex-col gap-4 rounded-xl bg-gradient-to-r from-slate-800 to-indigo-900 px-4 py-4 shadow-lg sm:flex-row sm:items-center sm:justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900">Lịch sử đơn hàng</h1>
+          <h1 className="text-2xl font-bold text-white drop-shadow-sm">
+            Lịch sử đơn hàng
+          </h1>
           {user?.email && (
-            <p className="mt-1 text-sm text-gray-600">{user.email}</p>
+            <p className="mt-1 text-sm text-indigo-100">{user.email}</p>
           )}
         </div>
         <Link
           href="/"
-          className="inline-flex w-fit items-center rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-800 transition hover:bg-gray-50"
+          className="inline-flex w-fit items-center rounded-md border border-white/30 bg-white/10 px-4 py-2 text-sm font-medium text-white backdrop-blur-sm transition hover:bg-white/20"
         >
           ← Quay lại trang chủ
         </Link>

@@ -4,6 +4,7 @@ import { FormEvent, useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import AuthGuard from "@/components/AuthGuard";
 import { readAuthUser } from "@/lib/authStorage";
+import { isValidVnPhone09, normalizeDigitsPhoneInput } from "@/lib/vnPhone";
 import { useCartStore } from "@/store/cartStore";
 
 function CheckoutContent() {
@@ -57,6 +58,14 @@ function CheckoutContent() {
       return;
     }
 
+    const phoneDigits = normalizeDigitsPhoneInput(customerPhone);
+    if (!isValidVnPhone09(phoneDigits)) {
+      setError(
+        "Số điện thoại bắt buộc: 10 chữ số, bắt đầu bằng 09 (chỉ nhập số, ví dụ 0912345678)."
+      );
+      return;
+    }
+
     if (items.length === 0) {
       setError("Giỏ hàng đang trống.");
       return;
@@ -71,7 +80,7 @@ function CheckoutContent() {
           userId: currentUser.id,
           customerName: customerName.trim(),
           customerAddress: customerAddress.trim(),
-          customerPhone: customerPhone.trim() || null,
+          customerPhone: phoneDigits,
           cartItems: items.map((item) => ({
             productId: item.id,
             quantity: item.quantity,
@@ -137,12 +146,14 @@ function CheckoutContent() {
 
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
         <section className="rounded-lg border border-gray-200 bg-white p-4 shadow-sm">
-          <h2 className="mb-4 text-lg font-semibold">Thông tin giao hàng</h2>
+          <h2 className="mb-4 text-lg font-semibold text-black">
+            Thông tin giao hàng
+          </h2>
           <form className="space-y-4" onSubmit={handleSubmit}>
             <div>
               <label
                 htmlFor="customerName"
-                className="mb-1 block text-sm font-medium text-gray-700"
+                className="mb-1 block text-sm font-medium text-black"
               >
                 Họ tên *
               </label>
@@ -151,7 +162,7 @@ function CheckoutContent() {
                 type="text"
                 value={customerName}
                 onChange={(e) => setCustomerName(e.target.value)}
-                className="w-full rounded-md border border-gray-300 px-3 py-2 focus:border-indigo-500 focus:outline-none"
+                className="w-full rounded-md border border-gray-300 px-3 py-2 text-black placeholder:text-gray-400 focus:border-indigo-500 focus:outline-none"
                 placeholder="Nguyen Van A"
                 required
               />
@@ -160,24 +171,32 @@ function CheckoutContent() {
             <div>
               <label
                 htmlFor="customerPhone"
-                className="mb-1 block text-sm font-medium text-gray-700"
+                className="mb-1 block text-sm font-medium text-black"
               >
-                Số điện thoại
+                Số điện thoại *
               </label>
               <input
                 id="customerPhone"
-                type="tel"
+                type="text"
+                inputMode="numeric"
+                autoComplete="tel"
+                pattern="09[0-9]{8}"
+                title="10 chữ số, bắt đầu 09"
                 value={customerPhone}
-                onChange={(e) => setCustomerPhone(e.target.value)}
-                className="w-full rounded-md border border-gray-300 px-3 py-2 focus:border-indigo-500 focus:outline-none"
-                placeholder="09xxxxxxxx"
+                onChange={(e) =>
+                  setCustomerPhone(normalizeDigitsPhoneInput(e.target.value))
+                }
+                className="w-full rounded-md border border-gray-300 px-3 py-2 text-black placeholder:text-gray-400 focus:border-indigo-500 focus:outline-none"
+                placeholder="0912345678"
+                required
+                maxLength={10}
               />
             </div>
 
             <div>
               <label
                 htmlFor="customerAddress"
-                className="mb-1 block text-sm font-medium text-gray-700"
+                className="mb-1 block text-sm font-medium text-black"
               >
                 Địa chỉ giao hàng *
               </label>
@@ -185,7 +204,7 @@ function CheckoutContent() {
                 id="customerAddress"
                 value={customerAddress}
                 onChange={(e) => setCustomerAddress(e.target.value)}
-                className="min-h-[110px] w-full rounded-md border border-gray-300 px-3 py-2 focus:border-indigo-500 focus:outline-none"
+                className="min-h-[110px] w-full rounded-md border border-gray-300 px-3 py-2 text-black placeholder:text-gray-400 focus:border-indigo-500 focus:outline-none"
                 placeholder="Số nhà, đường, quận/huyện, tỉnh/thành phố"
                 required
               />
@@ -202,7 +221,9 @@ function CheckoutContent() {
         </section>
 
         <section className="rounded-lg border border-gray-200 bg-white p-4 shadow-sm">
-          <h2 className="mb-4 text-lg font-semibold">Đơn hàng của bạn</h2>
+          <h2 className="mb-4 text-lg font-semibold text-black">
+            Đơn hàng của bạn
+          </h2>
           {items.length === 0 ? (
             <p className="text-sm text-gray-500">Giỏ hàng trống.</p>
           ) : (
@@ -225,11 +246,9 @@ function CheckoutContent() {
               </div>
 
               <div className="mt-4 border-t border-gray-200 pt-4">
-                <div className="flex items-center justify-between text-base font-semibold">
+                <div className="flex items-center justify-between text-base font-semibold text-black">
                   <span>Tổng cộng</span>
-                  <span className="text-indigo-700">
-                    {total.toLocaleString("vi-VN")} đ
-                  </span>
+                  <span>{total.toLocaleString("vi-VN")} đ</span>
                 </div>
               </div>
             </>

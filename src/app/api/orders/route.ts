@@ -1,4 +1,5 @@
 import { prisma } from "@/lib/prisma";
+import { isValidVnPhone09 } from "@/lib/vnPhone";
 
 /** Một dòng trong body giỏ hàng gửi lên server. */
 type CartItemBody = {
@@ -51,7 +52,7 @@ export async function POST(request: Request) {
     const cartItems = body.cartItems;
     const customerName = body.customerName?.trim() ?? "";
     const customerAddress = body.customerAddress?.trim() ?? "";
-    const customerPhone = body.customerPhone?.trim() || null;
+    const customerPhone = (body.customerPhone ?? "").trim().replace(/\D/g, "");
     const userId = body.userId?.trim() ?? "";
 
     if (!cartItems || !Array.isArray(cartItems) || cartItems.length === 0) {
@@ -64,6 +65,16 @@ export async function POST(request: Request) {
     if (!customerName || !customerAddress) {
       return Response.json(
         { error: "Tên khách hàng và địa chỉ là bắt buộc." },
+        { status: 400 }
+      );
+    }
+
+    if (!customerPhone || !isValidVnPhone09(customerPhone)) {
+      return Response.json(
+        {
+          error:
+            "Số điện thoại bắt buộc: 10 chữ số, bắt đầu bằng 09 (ví dụ 0912345678).",
+        },
         { status: 400 }
       );
     }
