@@ -1,8 +1,10 @@
 "use client";
 
+import Link from "next/link";
 import { useEffect, useState } from "react";
 import CartSidebar from "@/components/CartSidebar";
 import ProductCard, { type Product } from "@/components/ProductCard";
+import { clearAuthUser, readAuthUser, type AuthUser } from "@/lib/authStorage";
 import { useCartStore } from "@/store/cartStore";
 
 function ProductList() {
@@ -64,20 +66,70 @@ function ProductList() {
 
 export default function HomePage() {
   const [cartOpen, setCartOpen] = useState(false);
+  const [authUser, setAuthUser] = useState<AuthUser | null | undefined>(undefined);
+
+  useEffect(() => {
+    setAuthUser(readAuthUser());
+  }, []);
+
   const totalItems = useCartStore((s) =>
     s.items.reduce((acc, item) => acc + item.quantity, 0)
   );
 
+  const handleLogout = () => {
+    clearAuthUser();
+    setAuthUser(null);
+  };
+
+  const displayName =
+    authUser?.name?.trim() ||
+    authUser?.email?.split("@")[0] ||
+    "Người dùng";
+
   return (
     <main className="relative mx-auto max-w-7xl py-8">
-      <header className="relative mb-6 flex items-center justify-between px-4">
+      <header className="relative mb-6 flex flex-col gap-4 px-4 sm:flex-row sm:items-center sm:justify-between">
         <h1 className="text-2xl font-bold text-gray-900">Danh sách sản phẩm</h1>
-        <button
-          type="button"
-          onClick={() => setCartOpen(true)}
-          className="relative rounded-full border border-gray-200 bg-white p-3 shadow-sm transition hover:bg-gray-50"
-          aria-label="Mở giỏ hàng"
-        >
+
+        <div className="flex flex-wrap items-center justify-end gap-2 sm:gap-3">
+          {authUser === undefined ? (
+            <span className="text-sm text-gray-400">…</span>
+          ) : authUser ? (
+            <>
+              <span className="max-w-[200px] truncate text-sm text-gray-700" title={authUser.email}>
+                Xin chào, <strong>{displayName}</strong>
+              </span>
+              <button
+                type="button"
+                onClick={handleLogout}
+                className="rounded-md border border-gray-300 bg-white px-3 py-1.5 text-sm font-medium text-gray-800 transition hover:bg-gray-50"
+              >
+                Đăng xuất
+              </button>
+            </>
+          ) : (
+            <>
+              <Link
+                href="/login"
+                className="rounded-md border border-gray-300 bg-white px-3 py-1.5 text-sm font-medium text-gray-800 transition hover:bg-gray-50"
+              >
+                Đăng nhập
+              </Link>
+              <Link
+                href="/register"
+                className="rounded-md bg-indigo-600 px-3 py-1.5 text-sm font-medium text-white transition hover:bg-indigo-700"
+              >
+                Đăng ký
+              </Link>
+            </>
+          )}
+
+          <button
+            type="button"
+            onClick={() => setCartOpen(true)}
+            className="relative rounded-full border border-gray-200 bg-white p-3 shadow-sm transition hover:bg-gray-50"
+            aria-label="Mở giỏ hàng"
+          >
           <svg
             xmlns="http://www.w3.org/2000/svg"
             className="h-6 w-6 text-gray-800"
@@ -99,6 +151,7 @@ export default function HomePage() {
             </span>
           )}
         </button>
+        </div>
       </header>
 
       <ProductList />

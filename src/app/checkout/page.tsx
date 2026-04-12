@@ -2,39 +2,11 @@
 
 import { FormEvent, useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
+import AuthGuard from "@/components/AuthGuard";
+import { readAuthUser } from "@/lib/authStorage";
 import { useCartStore } from "@/store/cartStore";
 
-type StoredUser = {
-  id: string;
-  email?: string;
-  name?: string | null;
-};
-
-function readUserFromLocalStorage(): StoredUser | null {
-  if (typeof window === "undefined") return null;
-
-  // Hỗ trợ nhiều key phổ biến để tương thích với các bước login khác nhau.
-  const keys = ["user", "authUser", "auth_user", "next14-shop-user"];
-  for (const key of keys) {
-    const raw = localStorage.getItem(key);
-    if (!raw) continue;
-    try {
-      const parsed = JSON.parse(raw) as Partial<StoredUser>;
-      if (parsed && typeof parsed.id === "string" && parsed.id.trim()) {
-        return {
-          id: parsed.id.trim(),
-          email: parsed.email,
-          name: parsed.name ?? null,
-        };
-      }
-    } catch {
-      // bỏ qua key lỗi parse và thử key khác
-    }
-  }
-  return null;
-}
-
-export default function CheckoutPage() {
+function CheckoutContent() {
   const router = useRouter();
   const items = useCartStore((s) => s.items);
   const clearCart = useCartStore((s) => s.clearCart);
@@ -42,7 +14,6 @@ export default function CheckoutPage() {
   const [customerName, setCustomerName] = useState("");
   const [customerPhone, setCustomerPhone] = useState("");
   const [customerAddress, setCustomerAddress] = useState("");
-  const [user, setUser] = useState<StoredUser | null>(null);
   const [mounted, setMounted] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [message, setMessage] = useState<string | null>(null);
@@ -57,21 +28,14 @@ export default function CheckoutPage() {
 
   useEffect(() => {
     setMounted(true);
-    const storedUser = readUserFromLocalStorage();
-    setUser(storedUser);
-
-    if (!storedUser) {
-      router.replace("/login");
-      return;
-    }
+    const storedUser = readAuthUser();
 
     if (items.length === 0 && !orderCompleted) {
       router.replace("/");
       return;
     }
 
-    // Prefill tên người nhận nếu profile đã có sẵn.
-    if (storedUser.name && storedUser.name.trim()) {
+    if (storedUser?.name?.trim()) {
       setCustomerName(storedUser.name.trim());
     }
   }, [items.length, router, orderCompleted]);
@@ -81,7 +45,8 @@ export default function CheckoutPage() {
     setError(null);
     setMessage(null);
 
-    if (!user?.id) {
+    const currentUser = readAuthUser();
+    if (!currentUser?.id) {
       setError("Bạn chưa đăng nhập. Vui lòng đăng nhập lại.");
       router.replace("/login");
       return;
@@ -103,7 +68,7 @@ export default function CheckoutPage() {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          userId: user.id,
+          userId: currentUser.id,
           customerName: customerName.trim(),
           customerAddress: customerAddress.trim(),
           customerPhone: customerPhone.trim() || null,
@@ -126,7 +91,6 @@ export default function CheckoutPage() {
 
       setOrderCompleted(true);
       setMessage("Đặt hàng thành công");
-      // Gán state thành công trước, rồi mới xóa giỏ ở tick sau để useEffect không coi là "vào checkout khi giỏ rỗng" và redirect ngay.
       setTimeout(() => {
         clearCart();
       }, 0);
@@ -273,5 +237,13 @@ export default function CheckoutPage() {
         </section>
       </div>
     </main>
+  );
+}
+
+export default function CheckoutPage() {
+  return (
+    <AuthGuard>
+      <CheckoutContent />
+    </AuthGuard>
   );
 }
